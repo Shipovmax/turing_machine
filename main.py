@@ -1,108 +1,141 @@
 import time
+from typing import Dict, Tuple
 
 # ==========================================
-# НАСТРОЙКИ МАШИНЫ ТЬЮРИНГА (менять здесь)
+# TURING MACHINE CONFIGURATION
 # ==========================================
 
-INITIAL_TAPE = "10101"  # Начальная строчка на ленте (можно оставить пустой "")
-INITIAL_STATE = "q0"  # Стартовое состояние
-FINAL_STATE = "qf"  # Конечное состояние (остановка)
-BLANK = "#"  # Символ пустой ячейки
+# Initial content on the tape
+INITIAL_TAPE = "10101"
+# Starting state of the machine
+INITIAL_STATE = "q0"
+# State that signifies the machine has finished its work
+HALT_STATE = "qf"
+# Character used for empty tape cells
+BLANK_SYMBOL = "#"
 
-# Правила в формате словаря: 'состояние символ': 'новое_состояние новый_символ сдвиг'
-# Сейчас тут написана инверсия: меняет 0 на 1 и 1 на 0, потом останавливается.
-RULES = {
+# Transition rules dictionary: 'current_state current_char': 'next_state next_char movement'
+# This example implements bit inversion: 0 becomes 1, and 1 becomes 0.
+# Movements: R (Right), L (Left), N (No movement)
+TRANSITION_RULES = {
     'q0 0': 'q0 1 R',
     'q0 1': 'q0 0 R',
     'q0 #': 'qf # N'
 }
 
 
-# Если нужно базовое задание препода, закомментируй RULES выше и раскомментируй эти:
-# RULES = {
-#     'q0 #': 'q1 1 R',
-#     'q1 #': 'qf 1 N'
-# }
+class TuringMachine:
+    """
+    A class representing a 1D Turing Machine.
+    """
 
-# ==========================================
-# КОД ПРОГРАММЫ
-# ==========================================
+    def __init__(self, tape_str: str, initial_state: str, halt_state: str, blank: str, rules: Dict[str, str]):
+        # Represent tape as a dictionary for infinite-like behavior (index: character)
+        self.tape = {i: char for i, char in enumerate(tape_str)}
+        self.state = initial_state
+        self.halt_state = halt_state
+        self.blank = blank
+        self.rules = rules
+        self.head_position = 0
+        self.step_count = 0
 
-def print_tape(tape, head, state, step):
-    """Простенькая функция для вывода ленты в консоль"""
-    keys = list(tape.keys())
-    if not keys:
-        min_k, max_k = head - 1, head + 1
-    else:
-        # Берем края ленты + немного запаса для красоты
-        min_k = min(min(keys), head) - 1
-        max_k = max(max(keys), head) + 1
-
-    tape_out = ""
-    pointer = ""
-
-    for i in range(min_k, max_k + 1):
-        char = tape.get(i, BLANK)
-        if i == head:
-            tape_out += f"[{char}]"
-            pointer += " ^ "
+    def display(self):
+        """
+        Renders the current state of the tape and head position to the console.
+        """
+        keys = self.tape.keys()
+        if not keys:
+            min_index, max_index = self.head_position - 1, self.head_position + 1
         else:
-            tape_out += f" {char} "
-            pointer += "   "
+            # Determine boundaries with a bit of padding for visual clarity
+            min_index = min(min(keys), self.head_position) - 1
+            max_index = max(max(keys), self.head_position) + 1
 
-    print(f"Шаг: {step} | Текущее состояние: {state}")
-    print(tape_out)
-    print(pointer)
-    print("-" * 30)
+        tape_line = ""
+        head_pointer = ""
+
+        for i in range(min_index, max_index + 1):
+            char = self.tape.get(i, self.blank)
+            if i == self.head_position:
+                tape_line += f"[{char}]"
+                head_pointer += " ^ "
+            else:
+                tape_line += f" {char} "
+                head_pointer += "   "
+
+        print(f"Step: {self.step_count} | Current State: {self.state}")
+        print(tape_line)
+        print(head_pointer)
+        print("-" * 40)
+
+    def step(self) -> bool:
+        """
+        Executes a single step of the Turing machine.
+        Returns True if the machine should continue, False if it has halted or crashed.
+        """
+        current_char = self.tape.get(self.head_position, self.blank)
+        lookup_key = f"{self.state} {current_char}"
+
+        if lookup_key not in self.rules:
+            print(f"CRITICAL ERROR: No transition rule found for state '{self.state}' and character '{current_char}'")
+            return False
+
+        # Parse transition: [next_state, next_char, movement]
+        action = self.rules[lookup_key].split()
+        if len(action) != 3:
+            print(f"CRITICAL ERROR: Invalid rule format for '{lookup_key}'")
+            return False
+
+        next_state, next_char, movement = action
+
+        # Update tape and state
+        self.tape[self.head_position] = next_char
+        self.state = next_state
+
+        # Move the head
+        if movement == 'R':
+            self.head_position += 1
+        elif movement == 'L':
+            self.head_position -= 1
+        elif movement == 'N':
+            pass
+        else:
+            print(f"CRITICAL ERROR: Invalid movement command '{movement}'")
+            return False
+
+        self.step_count += 1
+        return True
+
+    def run(self, delay: float = 0.4):
+        """
+        Runs the Turing machine until it reaches the halt state or encounters an error.
+        """
+        print(">>> INITIALIZING TURING MACHINE <<<")
+        self.display()
+
+        while self.state != self.halt_state:
+            if not self.step():
+                break
+            
+            time.sleep(delay)
+            self.display()
+
+        if self.state == self.halt_state:
+            print(">>> EXECUTION COMPLETED SUCCESSFULLY <<<")
 
 
 def main():
-    # Загоняем начальную строку в словарь (индекс: символ)
-    tape = {i: char for i, char in enumerate(INITIAL_TAPE)}
-    state = INITIAL_STATE
-    head = 0
-    step = 0
-
-    print(">>> ЗАПУСК МАШИНЫ ТЬЮРИНГА <<<")
-    print_tape(tape, head, state, step)
-
-    # Крутим цикл, пока не дойдем до финального состояния
-    while state != FINAL_STATE:
-        current_char = tape.get(head, BLANK)
-        cmd_key = f"{state} {current_char}"
-
-        # Проверяем, есть ли такое правило
-        if cmd_key not in RULES:
-            print(f"АВАРИЯ! Нет правила для '{cmd_key}'")
-            break
-
-        # Достаем команду и разбиваем по пробелам
-        action = RULES[cmd_key].split()
-        new_state = action[0]
-        new_char = action[1]
-        move = action[2]
-
-        # Обновляем ленту и состояние
-        tape[head] = new_char
-        state = new_state
-
-        # Двигаем головку
-        if move == 'R':
-            head += 1
-        elif move == 'L':
-            head -= 1
-        elif move == 'N':
-            pass
-        else:
-            print("Ошибка сдвига!")
-            break
-
-        step += 1
-        time.sleep(0.4)  # Небольшая пауза, чтобы было видно, как она работает
-        print_tape(tape, head, state, step)
-
-    if state == FINAL_STATE:
-        print(">>> АЛГОРИТМ УСПЕШНО ЗАВЕРШЕН <<<")
+    """
+    Main entry point for the Turing Machine simulation.
+    """
+    tm = TuringMachine(
+        tape_str=INITIAL_TAPE,
+        initial_state=INITIAL_STATE,
+        halt_state=HALT_STATE,
+        blank=BLANK_SYMBOL,
+        rules=TRANSITION_RULES
+    )
+    tm.run()
 
 
 if __name__ == "__main__":
