@@ -6,7 +6,7 @@ from typing import Dict, Tuple
 # ==========================================
 
 # Initial content on the tape
-INITIAL_TAPE = "10101"
+INITIAL_TAPE = "101010"
 # Starting state of the machine
 INITIAL_STATE = "q0"
 # State that signifies the machine has finished its work
@@ -18,9 +18,32 @@ BLANK_SYMBOL = "#"
 # This example implements bit inversion: 0 becomes 1, and 1 becomes 0.
 # Movements: R (Right), L (Left), N (No movement)
 TRANSITION_RULES = {
-    'q0 0': 'q0 1 R',
-    'q0 1': 'q0 0 R',
-    'q0 #': 'qf # N'
+
+    # ищем первый символ слева
+    'q0 0': 'q1 # R',
+    'q0 1': 'q2 # R',
+    'q0 #': 'qf # N',
+
+    # идём вправо до конца если был 0
+    'q1 0': 'q1 0 R',
+    'q1 1': 'q1 1 R',
+    'q1 #': 'q3 # L',
+
+    # идём вправо до конца если был 1
+    'q2 0': 'q2 0 R',
+    'q2 1': 'q2 1 R',
+    'q2 #': 'q4 # L',
+
+    # проверяем справа 0
+    'q3 0': 'q5 # L',
+
+    # проверяем справа 1
+    'q4 1': 'q5 # L',
+
+    # возвращаемся в начало
+    'q5 0': 'q5 0 L',
+    'q5 1': 'q5 1 L',
+    'q5 #': 'q0 # R'
 }
 
 
