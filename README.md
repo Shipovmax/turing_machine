@@ -1,68 +1,105 @@
-# Turing Machine Simulator
+# TuringPy
 
-A clean, object-oriented implementation of a 1D Turing Machine in Python. This project simulates the fundamental computational model, allowing users to define their own states, transition rules, and initial tape configurations.
+A clean, object-oriented Turing Machine simulator in Python.  
+Define any transition table, watch the machine step through the tape in real time, and experiment with classical computability problems.
+
+---
+
+## What's Included
+
+Two independent machines in one repo:
+
+**`main.py` — General-purpose Turing Machine**  
+Fully configurable via constants at the top of the file. Ships with a palindrome-checker transition table as the default example (erases matched characters from both ends until the tape is empty or a mismatch is found).
+
+**`PalindromeMachine.py` — Dedicated palindrome checker**  
+A simpler two-pointer implementation that walks inward from both ends of the tape. Accepts or rejects in O(n/2) steps with clear console output.
+
+---
 
 ## Features
 
-- **Object-Oriented Design**: Encapsulates the Turing Machine logic within a dedicated `TuringMachine` class.
-- **Dynamic Tape**: Uses a dictionary-based tape implementation, allowing for theoretically infinite expansion in both directions.
-- **Visual Feedback**: Provides a step-by-step console visualization of the tape, head position, and current state.
-- **Configurable Rules**: Easily define custom transition rules using a simple string-based format.
+- **Dictionary-based tape** — theoretically infinite in both directions; cells outside the initial string default to the blank symbol
+- **Step-by-step console visualisation** — tape content, head position (`^`), current state, and step counter on every transition
+- **Configurable delay** — adjust `delay` in `run()` or the `DELAY` constant to slow down or speed up the animation
+- **Error reporting** — halts with a `CRITICAL ERROR` message if no transition rule is found for the current `(state, char)` pair
+- **No external dependencies** — stdlib only (`time`, `typing`)
+
+---
 
 ## Requirements
 
-- Python 3.6+
+Python 3.6+
 
-## Getting Started
+---
 
-### Installation
-
-No external dependencies are required. Simply clone the repository or download the `main.py` file.
+## Usage
 
 ```bash
-git clone https://github.com/your-username/turing-machine.git
+git clone https://github.com/Shipovmax/turing-machine
 cd turing-machine
+
+python main.py               # general Turing Machine
+python PalindromeMachine.py  # two-pointer palindrome checker
 ```
 
-### Running the Simulator
+---
 
-Execute the main script to start the simulation:
+## Configuration (`main.py`)
 
-```bash
-python main.py
-```
+| Constant | Default | Description |
+|----------|---------|-------------|
+| `INITIAL_TAPE` | `"101010"` | Starting tape content |
+| `INITIAL_STATE` | `"q0"` | Entry state |
+| `HALT_STATE` | `"qf"` | Accepting/halting state |
+| `BLANK_SYMBOL` | `"#"` | Empty cell character |
+| `TRANSITION_RULES` | see below | Transition table |
 
-## Configuration
-
-You can customize the machine's behavior by modifying the constants at the top of `main.py`:
-
-- `INITIAL_TAPE`: The starting string on the tape.
-- `INITIAL_STATE`: The entry point for the machine (e.g., `"q0"`).
-- `HALT_STATE`: The state that signals successful completion (e.g., `"qf"`).
-- `BLANK_SYMBOL`: The character representing an empty cell (e.g., `"#"`).
-- `TRANSITION_RULES`: A dictionary where keys are `"state char"` and values are `"next_state next_char movement"`.
-    - **Movement options**: `R` (Right), `L` (Left), `N` (None).
-
-### Example Transition Rule
+### Transition Rule Format
 
 ```python
 TRANSITION_RULES = {
-    'q0 0': 'q0 1 R', # If state is q0 and char is 0, write 1, stay in q0, move Right
-    'q0 1': 'q0 0 R', # If state is q0 and char is 1, write 0, stay in q0, move Right
-    'q0 #': 'qf # N'  # If state is q0 and char is blank, halt
+    # 'current_state char': 'next_state write_char movement'
+    'q0 0': 'q0 1 R',   # read 0 → write 1, move right, stay in q0
+    'q0 1': 'q0 0 R',   # read 1 → write 0, move right, stay in q0
+    'q0 #': 'qf # N',   # blank → halt
 }
 ```
 
+Movement options: `R` (right), `L` (left), `N` (no move).
+
+### Example — Bit Inverter
+
+```python
+INITIAL_TAPE = "1100"
+
+TRANSITION_RULES = {
+    'q0 0': 'q0 1 R',
+    'q0 1': 'q0 0 R',
+    'q0 #': 'qf # N',
+}
+```
+
+---
+
 ## How It Works
 
-1. **Initialization**: The machine starts at `head_position = 0` with the `INITIAL_STATE`.
-2. **Lookup**: For each step, it looks up the rule corresponding to the current state and the character under the head.
-3. **Action**: It writes a new character, transitions to a new state, and moves the head.
-4. **Halt**: The process repeats until the `HALT_STATE` is reached or no valid rule is found (error).
+```
+Init: tape dict {0:'1', 1:'0', 2:'1', ...}, head=0, state=q0
 
-## Code Quality Standards
+Each step:
+  1. Read  tape[head_position]  (blank if key missing)
+  2. Look up  (state, char)  in TRANSITION_RULES
+  3. Write new char, update state, move head
+  4. Repeat until state == HALT_STATE
+```
 
-This project follows:
-- **PEP 8**: Python style guidelines.
-- **Type Hinting**: Improved code clarity and IDE support.
-- **Docstrings**: Clear documentation for all classes and methods.
+The tape is stored as `Dict[int, str]` so the head can move arbitrarily far left (negative indices) or right without pre-allocating memory.
+
+---
+
+## Code Standards
+
+- PEP 8 formatting
+- Type hints on all public methods
+- Docstrings on `TuringMachine` class and every method
