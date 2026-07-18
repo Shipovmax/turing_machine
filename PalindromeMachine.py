@@ -8,19 +8,19 @@ DELAY = 0.4
 
 class PalindromeMachine:
 
-    def __init__(self, tape: str):
-        self.tape = tape
-        self.left = 0
-        self.right = len(tape) - 1
-        self.step_count = 0
+    def __init__(self, tape: str) -> None:
+        self.tape: str = tape
+        self.left: int = 0
+        self.right: int = len(tape) - 1
+        self.step_count: int = 0
 
-    def display(self):
+    def display(self) -> None:
         print(f"Step: {self.step_count}")
         print(self.tape)
         print(" " * self.left + "^" + " " * (self.right - self.left -1 ) +'^')
         print("-" * 40)
 
-    def step(self):
+    def step(self) -> str:
         if self.left >= self.right:
             return "ACCEPT"
 
@@ -33,7 +33,7 @@ class PalindromeMachine:
 
         return "CONTINUE"
 
-    def run(self):
+    def run(self) -> None:
         print("--- PALINDROME CHECK STARTED ---")
         self.display()
 
@@ -51,7 +51,7 @@ class PalindromeMachine:
             time.sleep(DELAY)
             self.display()
 
-def main():
+def main() -> None:
     machine = PalindromeMachine(INITIAL_TAPE)
     machine.run()
 

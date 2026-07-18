@@ -19,28 +19,28 @@ BLANK_SYMBOL = "#"
 # Movements: R (Right), L (Left), N (No movement)
 TRANSITION_RULES = {
 
-    # ищем первый символ слева
+    # look for the first character from the left
     'q0 0': 'q1 # R',
     'q0 1': 'q2 # R',
     'q0 #': 'qf # N',
 
-    # идём вправо до конца если был 0
+    # go right to the end if it was 0
     'q1 0': 'q1 0 R',
     'q1 1': 'q1 1 R',
     'q1 #': 'q3 # L',
 
-    # идём вправо до конца если был 1
+    # go right to the end if it was 1
     'q2 0': 'q2 0 R',
     'q2 1': 'q2 1 R',
     'q2 #': 'q4 # L',
 
-    # проверяем справа 0
+    # check for 0 on the right
     'q3 0': 'q5 # L',
 
-    # проверяем справа 1
+    # check for 1 on the right
     'q4 1': 'q5 # L',
 
-    # возвращаемся в начало
+    # return to the beginning
     'q5 0': 'q5 0 L',
     'q5 1': 'q5 1 L',
     'q5 #': 'q0 # R'
@@ -62,7 +62,7 @@ class TuringMachine:
         self.head_position = 0
         self.step_count = 0
 
-    def display(self):
+    def display(self) -> None:
         """
         Renders the current state of the tape and head position to the console.
         """
@@ -129,7 +129,7 @@ class TuringMachine:
         self.step_count += 1
         return True
 
-    def run(self, delay: float = 0.4):
+    def run(self, delay: float = 0.4) -> None:
         """
         Runs the Turing machine until it reaches the halt state or encounters an error.
         """
@@ -147,7 +147,7 @@ class TuringMachine:
             print(">>> EXECUTION COMPLETED SUCCESSFULLY <<<")
 
 
-def main():
+def main() -> None:
     """
     Main entry point for the Turing Machine simulation.
     """
