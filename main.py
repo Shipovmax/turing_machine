@@ -18,32 +18,26 @@ BLANK_SYMBOL = "#"
 # This example implements bit inversion: 0 becomes 1, and 1 becomes 0.
 # Movements: R (Right), L (Left), N (No movement)
 TRANSITION_RULES = {
-
     # look for the first character from the left
-    'q0 0': 'q1 # R',
-    'q0 1': 'q2 # R',
-    'q0 #': 'qf # N',
-
+    "q0 0": "q1 # R",
+    "q0 1": "q2 # R",
+    "q0 #": "qf # N",
     # go right to the end if it was 0
-    'q1 0': 'q1 0 R',
-    'q1 1': 'q1 1 R',
-    'q1 #': 'q3 # L',
-
+    "q1 0": "q1 0 R",
+    "q1 1": "q1 1 R",
+    "q1 #": "q3 # L",
     # go right to the end if it was 1
-    'q2 0': 'q2 0 R',
-    'q2 1': 'q2 1 R',
-    'q2 #': 'q4 # L',
-
+    "q2 0": "q2 0 R",
+    "q2 1": "q2 1 R",
+    "q2 #": "q4 # L",
     # check for 0 on the right
-    'q3 0': 'q5 # L',
-
+    "q3 0": "q5 # L",
     # check for 1 on the right
-    'q4 1': 'q5 # L',
-
+    "q4 1": "q5 # L",
     # return to the beginning
-    'q5 0': 'q5 0 L',
-    'q5 1': 'q5 1 L',
-    'q5 #': 'q0 # R'
+    "q5 0": "q5 0 L",
+    "q5 1": "q5 1 L",
+    "q5 #": "q0 # R",
 }
 
 
@@ -52,7 +46,14 @@ class TuringMachine:
     A class representing a 1D Turing Machine.
     """
 
-    def __init__(self, tape_str: str, initial_state: str, halt_state: str, blank: str, rules: Dict[str, str]):
+    def __init__(
+        self,
+        tape_str: str,
+        initial_state: str,
+        halt_state: str,
+        blank: str,
+        rules: Dict[str, str],
+    ):
         # Represent tape as a dictionary for infinite-like behavior (index: character)
         self.tape = {i: char for i, char in enumerate(tape_str)}
         self.state = initial_state
@@ -100,7 +101,9 @@ class TuringMachine:
         lookup_key = f"{self.state} {current_char}"
 
         if lookup_key not in self.rules:
-            print(f"CRITICAL ERROR: No transition rule found for state '{self.state}' and character '{current_char}'")
+            print(
+                f"CRITICAL ERROR: No transition rule found for state '{self.state}' and character '{current_char}'"
+            )
             return False
 
         # Parse transition: [next_state, next_char, movement]
@@ -116,11 +119,11 @@ class TuringMachine:
         self.state = next_state
 
         # Move the head
-        if movement == 'R':
+        if movement == "R":
             self.head_position += 1
-        elif movement == 'L':
+        elif movement == "L":
             self.head_position -= 1
-        elif movement == 'N':
+        elif movement == "N":
             pass
         else:
             print(f"CRITICAL ERROR: Invalid movement command '{movement}'")
@@ -139,7 +142,7 @@ class TuringMachine:
         while self.state != self.halt_state:
             if not self.step():
                 break
-            
+
             time.sleep(delay)
             self.display()
 
@@ -156,7 +159,7 @@ def main() -> None:
         initial_state=INITIAL_STATE,
         halt_state=HALT_STATE,
         blank=BLANK_SYMBOL,
-        rules=TRANSITION_RULES
+        rules=TRANSITION_RULES,
     )
     tm.run()
 

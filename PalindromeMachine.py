@@ -1,6 +1,5 @@
 import time
 
-
 INITIAL_TAPE = "1001"
 
 DELAY = 0.4
@@ -17,7 +16,7 @@ class PalindromeMachine:
     def display(self) -> None:
         print(f"Step: {self.step_count}")
         print(self.tape)
-        print(" " * self.left + "^" + " " * (self.right - self.left -1 ) +'^')
+        print(" " * self.left + "^" + " " * (self.right - self.left - 1) + "^")
         print("-" * 40)
 
     def step(self) -> str:
@@ -51,9 +50,11 @@ class PalindromeMachine:
             time.sleep(DELAY)
             self.display()
 
+
 def main() -> None:
     machine = PalindromeMachine(INITIAL_TAPE)
     machine.run()
+
 
 if __name__ == "__main__":
     main()
